@@ -14,9 +14,9 @@ export default function Home() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   
-  // Новые state для поиска и сортировки
+  // --- Поиск и сортировка ---
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("created_at"); // created_at, priority, due_at
+  const [sortBy, setSortBy] = useState("created_at");
   
   // --- Редактирование ---
   const [editingTask, setEditingTask] = useState(null);
@@ -28,7 +28,7 @@ export default function Home() {
     description: ""
   });
 
-  // --- Загрузка ---
+  // --- Загрузка задач ---
   async function loadTasks() {
     setLoading(true);
     try {
@@ -51,7 +51,7 @@ export default function Home() {
     loadTasks();
   }, []);
 
-  // --- Добавление ---
+  // --- Добавление задачи ---
   async function handleAdd(e) {
     e.preventDefault();
     const text = taskText.trim();
@@ -82,6 +82,7 @@ export default function Home() {
       return;
     }
 
+    // Очистка формы
     setTaskText("");
     setTaskPriority("medium");
     setTaskDue("");
@@ -102,7 +103,7 @@ export default function Home() {
     loadTasks();
   }
 
-  // ----toggle done---
+  // --- Отметка выполнено ---
   async function handleToggleDone(id) {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
@@ -226,7 +227,28 @@ export default function Home() {
   const completedTasks = tasks.filter(t => t.done).length;
   const activeTasks = tasks.filter(t => !t.done).length;
   const overdueTasks = tasks.filter(t => !t.done && t.due_at && new Date(t.due_at) < new Date()).length;
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  // --- Стили для иконок ---
+  const iconButtonStyle = {
+    width: '36px',
+    height: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    cursor: 'pointer',
+    border: 'none',
+    borderRadius: '8px',
+    transition: 'all 0.2s',
+    padding: 0,
+    backgroundColor: '#ed8936',
+    color: 'white'
+  };
+
+  const deleteIconButtonStyle = {
+    ...iconButtonStyle,
+    backgroundColor: '#e53e3e'
+  };
 
   // --- Рендер ---
   if (loading) {
@@ -262,7 +284,7 @@ export default function Home() {
       {/* === Статистика === */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
         gap: '12px',
         marginBottom: '20px',
         padding: '16px',
@@ -425,7 +447,7 @@ export default function Home() {
         </select>
       </div>
 
-      {/* === Фильтры === */}
+      {/* === Фильтры --- */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
@@ -473,8 +495,7 @@ export default function Home() {
             gap: '12px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
             flexWrap: 'wrap',
-            transition: 'box-shadow 0.2s',
-            color: '#333'  // гарантируем контраст
+            color: '#333'
           }}>
             <input
               type="checkbox"
@@ -523,37 +544,43 @@ export default function Home() {
               )}
             </div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {/* КНОПКА РЕДАКТИРОВАТЬ — ТОЛЬКО ИКОНКА */}
               <button
                 onClick={() => openEditModal(task)}
+                title="Редактировать задачу"
                 style={{
-                  padding: '8px 12px',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  backgroundColor: '#ed8936',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  whiteSpace: 'nowrap',
-                  fontWeight: 500
+                  ...iconButtonStyle,
+                  backgroundColor: '#ed8936'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.backgroundColor = '#dd6b20';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = '#ed8936';
                 }}
               >
-                ✏️ Редактировать
+                ✏️
               </button>
+              {/* КНОПКА УДАЛИТЬ — ТОЛЬКО ИКОНКА */}
               <button
                 onClick={() => handleDelete(task.id)}
+                title="Удалить задачу"
                 style={{
-                  padding: '8px 12px',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  backgroundColor: '#e53e3e',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  whiteSpace: 'nowrap',
-                  fontWeight: 500
+                  ...deleteIconButtonStyle,
+                  backgroundColor: '#e53e3e'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.backgroundColor = '#c53030';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = '#e53e3e';
                 }}
               >
-                🗑️ Удалить
+                🗑️
               </button>
             </div>
           </li>
@@ -759,8 +786,7 @@ function StatCard({ label, value, icon, color }) {
       borderRadius: '8px',
       textAlign: 'center',
       border: `1px solid ${color}20`,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-      transition: 'transform 0.2s'
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
     }}>
       <div style={{ fontSize: '1.8rem', marginBottom: '4px' }}>{icon}</div>
       <div style={{ 
