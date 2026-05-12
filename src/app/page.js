@@ -28,6 +28,9 @@ export default function Home() {
     description: ""
   });
 
+  // --- Toasts (уведомления) ---
+  const [toasts, setToasts] = useState([]);
+
   // --- Загрузка задач ---
   async function loadTasks() {
     setLoading(true);
@@ -51,12 +54,40 @@ export default function Home() {
     loadTasks();
   }, []);
 
+  // --- Toasts: показать уведомление ---
+  function showToast(message, type = 'success') {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  }
+
+  // --- Быстрое добавление (Enter) ---
+  async function handleQuickAdd(title) {
+    const { error } = await supabase
+      .from("tasks")
+      .insert([{ 
+        title: title.trim(), 
+        priority: "medium", 
+        done: false 
+      }]);
+
+    if (error) {
+      console.error("Ошибка быстрого добавления:", error);
+      showToast(`Ошибка: ${error.message}`, 'error');
+      return;
+    }
+    loadTasks();
+    showToast("✅ Задача добавлена", 'success');
+  }
+
   // --- Добавление задачи ---
   async function handleAdd(e) {
     e.preventDefault();
     const text = taskText.trim();
     if (!text) {
-      alert("Введите название задачи!");
+      showToast("Введите название задачи!", 'error');
       return;
     }
 
@@ -78,7 +109,7 @@ export default function Home() {
 
     if (error) {
       console.error("Ошибка добавления:", error);
-      alert(`Ошибка: ${error.message}`);
+      showToast(`Ошибка: ${error.message}`, 'error');
       return;
     }
 
@@ -88,6 +119,7 @@ export default function Home() {
     setTaskDue("");
     setTaskDescription("");
     loadTasks();
+    showToast("✅ Задача добавлена", 'success');
   }
 
   // --- Удаление ---
@@ -97,10 +129,11 @@ export default function Home() {
     const { error } = await supabase.from("tasks").delete().eq("id", id);
     if (error) {
       console.error("Ошибка удаления:", error);
-      alert(`Ошибка: ${error.message}`);
+      showToast(`Ошибка: ${error.message}`, 'error');
       return;
     }
     loadTasks();
+    showToast("✅ Задача удалена", 'success');
   }
 
   // --- Отметка выполнено ---
@@ -115,9 +148,11 @@ export default function Home() {
 
     if (error) {
       console.error("Ошибка обновления:", error);
+      showToast(`Ошибка: ${error.message}`, 'error');
       return;
     }
     loadTasks();
+    showToast("✅ Статус задачи изменён", 'success');
   }
 
   // --- Редактирование: открытие ---
@@ -142,7 +177,7 @@ export default function Home() {
   async function handleUpdate(e) {
     e.preventDefault();
     if (!editForm.title.trim()) {
-      alert("Введите название задачи!");
+      showToast("Введите название задачи!", 'error');
       return;
     }
 
@@ -164,12 +199,13 @@ export default function Home() {
 
     if (error) {
       console.error("Ошибка обновления:", error);
-      alert(`Ошибка: ${error.message}`);
+      showToast(`Ошибка: ${error.message}`, 'error');
       return;
     }
 
     closeEditModal();
     loadTasks();
+    showToast("✅ Задача обновлена", 'success');
   }
 
   // --- Фильтрация ---
@@ -200,7 +236,6 @@ export default function Home() {
       if (!b.due_at) return -1;
       return new Date(a.due_at) - new Date(b.due_at);
     }
-    // default: по created_at (новые сверху)
     return new Date(b.created_at) - new Date(a.created_at);
   });
 
@@ -280,6 +315,34 @@ export default function Home() {
       }}>
         📱 Task Tracker
       </h1>
+
+      {/* === Быстрое добавление === */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '16px',
+        flexWrap: 'wrap'
+      }}>
+        <input
+          type="text"
+          placeholder="⚡ Быстро добавить задачу... (Enter)"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+              handleQuickAdd(e.target.value.trim());
+              e.target.value = '';
+            }
+          }}
+          style={{
+            flex: '1 1 200px',
+            padding: '10px',
+            fontSize: '14px',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            backgroundColor: 'white',
+            color: '#333'
+          }}
+        />
+      </div>
 
       {/* === Статистика === */}
       <div style={{
@@ -544,7 +607,6 @@ export default function Home() {
               )}
             </div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {/* КНОПКА РЕДАКТИРОВАТЬ — ТОЛЬКО ИКОНКА */}
               <button
                 onClick={() => openEditModal(task)}
                 title="Редактировать задачу"
@@ -563,7 +625,6 @@ export default function Home() {
               >
                 ✏️
               </button>
-              {/* КНОПКА УДАЛИТЬ — ТОЛЬКО ИКОНКА */}
               <button
                 onClick={() => handleDelete(task.id)}
                 title="Удалить задачу"
@@ -773,6 +834,35 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* === Toasts (всплывающие уведомления) === */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        zIndex: 9999,
+        pointerEvents: 'none'
+      }}>
+        {toasts.map(toast => (
+          <div key={toast.id} style={{
+            padding: '12px 20px',
+            borderRadius: '8px',
+            backgroundColor: toast.type === 'error' ? '#e53e3e' : 
+                            toast.type === 'success' ? '#38a169' : '#0070f3',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            fontSize: '14px',
+            fontWeight: 500,
+            animation: 'slideIn 0.3s ease-out',
+            pointerEvents: 'auto'
+          }}>
+            {toast.message}
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
