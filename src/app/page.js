@@ -251,10 +251,11 @@ export default function Home() {
     return Date.parse(task.due_at) < Date.now();
   }
 
-  function priorityLabel(p) {
-    if (p === "low") return "Низкий";
-    if (p === "high") return "Высокий";
-    return "Средний";
+  // --- Иконки приоритетов ---
+  function priorityIcon(p) {
+    if (p === "high") return "🔴";
+    if (p === "medium") return "🟡";
+    return "🔵"; // low
   }
 
   // --- СТАТИСТИКА ---
@@ -467,7 +468,7 @@ export default function Home() {
         </form>
       </div>
 
-      {/* === Поиск и сортировка === */}
+      {/* === Поиск и сортировка --- */}
       <div style={{
         display: 'flex',
         gap: '10px',
@@ -538,7 +539,7 @@ export default function Home() {
         ))}
       </div>
 
-      {/* === Список задач === */}
+      {/* === Список задач --- */}
       <ul style={{
         listStyle: 'none',
         padding: 0,
@@ -581,7 +582,8 @@ export default function Home() {
                 color: task.done ? '#718096' : '#1a202c',
                 fontWeight: 500
               }}>
-                <strong>[{priorityLabel(task.priority)}]</strong> {task.title}
+                {/* ИЗМЕНЕНО: иконки приоритетов вместо текста */}
+                {priorityIcon(task.priority)} {task.title}
               </div>
               {task.description && (
                 <div style={{
