@@ -91,11 +91,15 @@ export default function Home() {
       return;
     }
 
-    let dueAt = null;
-    if (taskDue) {
-      const ms = Date.parse(taskDue);
-      dueAt = Number.isNaN(ms) ? null : new Date(ms).toISOString();
+  let dueAt = null;
+  if (taskDue) {
+    // Если в строке нет 'T' (время), добавляем 'T00:00:00' (начало дня)
+    const dateTimeStr = taskDue.includes('T') ? taskDue : `${taskDue}T00:00:00`;
+    const date = new Date(dateTimeStr);
+    if (!isNaN(date.getTime())) {
+      dueAt = date.toISOString();
     }
+  }
 
     const { error } = await supabase
       .from("tasks")
@@ -183,8 +187,11 @@ export default function Home() {
 
     let dueAt = null;
     if (editForm.due_at) {
-      const ms = Date.parse(editForm.due_at);
-      dueAt = Number.isNaN(ms) ? null : new Date(ms).toISOString();
+      const dateTimeStr = editForm.due_at.includes('T') ? editForm.due_at : `${editForm.due_at}T00:00:00`;
+      const date = new Date(dateTimeStr);
+      if (!isNaN(date.getTime())) {
+        dueAt = date.toISOString();
+      }
     }
 
     const { error } = await supabase
