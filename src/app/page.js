@@ -27,6 +27,32 @@ export default function Home() {
     due_at: "",
     description: ""
   });
+  
+  // === ТЁМНАЯ ТЕМА ===
+  // Инициализируем состояние: берём из localStorage или системных настроек
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode');
+      if (saved !== null) return JSON.parse(saved);
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Применяем/убираем класс .dark у <html> и сохраняем в localStorage
+  useEffect(() => {
+    const html = document.documentElement;
+    if (darkMode) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  // Функция переключения
+  const toggleDarkMode = () => setDarkMode(prev => !prev);
+  // ===================
 
   // --- Toasts (уведомления) ---
   const [toasts, setToasts] = useState([]);
@@ -315,15 +341,41 @@ export default function Home() {
       fontFamily: 'Arial, sans-serif',
       boxSizing: 'border-box'
     }}>
-      <h1 style={{
-        textAlign: 'center',
-        fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
-        marginBottom: '20px',
-        color: '#222'
+            {/* Заголовок + кнопка тёмной темы */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+        marginBottom: '20px'
       }}>
-        📱 Task Tracker
-      </h1>
-
+        <h1 style={{
+          fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
+          color: '#222',
+          margin: 0
+        }}>
+          📱 Task Tracker
+        </h1>
+        <button
+          onClick={toggleDarkMode}
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--foreground)',
+            borderRadius: '6px',
+            padding: '6px 10px',
+            cursor: 'pointer',
+            fontSize: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          aria-label={darkMode ? 'Светлая тема' : 'Тёмная тема'}
+          title={darkMode ? 'Переключить на светлую тему' : 'Переключить на тёмную тему'}
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
+      </div>
+        
       {/* === Быстрое добавление === */}
       <div style={{
         display: 'flex',
