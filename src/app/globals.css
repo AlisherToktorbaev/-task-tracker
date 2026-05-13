@@ -59,3 +59,60 @@ a {
     opacity: 1;
   }
 }
+
+/* === ТЕМНАЯ ТЕМА: стили для ручного переключения === */
+
+/* Переопределяем CSS-переменные для тёмной темы */
+html.dark {
+  color-scheme: dark;
+}
+html.dark body {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* Затемняем карточки и элементы интерфейса */
+html.dark .stat-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+html.dark .task-item {
+  background: #1a1a1a;
+  border-color: #333;
+}
+html.dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+html.dark .modal-content {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+/* Тёмные инпуты */
+html.dark .search-input,
+html.dark .task-input,
+html.dark .date-input {
+  background: #2a2a2a;
+  color: #ededed;
+  border-color: #444;
+}
+
+/* Тёмные кнопки фильтров и селекты */
+html.dark .filter-btn.active {
+  background: #333;
+  border-color: #555;
+}
+html.dark .sort-select {
+  background: #2a2a2a;
+  color: #ededed;
+  border-color: #444;
+}
+
+/* Тёмные тосты и приоритеты */
+html.dark .toast {
+  background: #333;
+  color: #fff;
+}
+html.dark .priority-badge {
+  border-color: #555;
+}
